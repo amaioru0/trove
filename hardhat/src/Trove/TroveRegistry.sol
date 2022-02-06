@@ -4,15 +4,18 @@ pragma solidity 0.8.7;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
+/// @custom:security-contact alex@homebox.ie
+
 
 contract TroveRegistry is Ownable {
 
-    constructor () {
-
-    }
-
     address hideServ;
     address vault;
+
+    constructor (address _hideServ) {
+        hideServ = _hideServ;
+    }
+
 
     using Counters for Counters.Counter;
     Counters.Counter private _layersIdCounter;
@@ -58,7 +61,10 @@ contract TroveRegistry is Ownable {
     event NewLayer(string name, uint256 layerId, address owner);
 
     // Event emited when a new entity is added to a layer
-    event EntityAdded(string name, EntityType entityType, string ipfs, bool status, string geohash);
+    event EntityAdded(uint256 layerId, uint256 entityId, string name, EntityType entityType, TreasureType treasureType);
+
+    // Event emited when geohash was fullfilled on entity
+    event EntityReady(uint256 layerId, uint256 entityId, string name, EntityType entityType, TreasureType treasureType, string geohash, bool status, uint256 vaultId);
 
     // Function to create a new layer
     function createLayer(string calldata name, address owner, address prover) public {
@@ -74,22 +80,30 @@ contract TroveRegistry is Ownable {
     }
 
 
-    // Function to add a new entity to a layer
-
-    function addEntity(uint256 layerId, string calldata name, EntityType entityType, string calldata ipfs) public {
-        require(msg.sender == layers[layerId].owner, "Only layer owner can add entity");
+    // Function to add a new entity to a layer by layer owner
+    function addEntity(uint256 layerId, string calldata name, EntityType entityType, TreasureType treasureType, uint256 vaultId) public {
+        // require(msg.sender == layers[layerId].owner), "Only layer owner can add entity");
         uint256 entityId = entitiesCounter[layerId].current();
         entities[layerId][entityId] = Entity({
             name: name,
             entityType: entityType,
-            ipfs: ipfs,
             status: false,
-            geohash: ""
+            geohash: "",
+            treasureType: treasureType,
+            vaultId: vaultId
         });
         entitiesCounter[layerId].increment();
-        EntityAdded(name, entityType, ipfs, status);
+        emit EntityAdded(layerId, entityId, name, entityType, treasureType);
+    }
+
+    // hideServ update geohash function
+    function fullfillGeohash(uint256 layerId, uint256 entityId, string calldata geohash) public {
+        require(msg.sender == hideServ, "Omly hideServ can fullfill geohash");
+        entities[layerId][entityId].geohash = geohash;
+        entities[layerId][entityId].status = true;
+        // event EntityReady(uint256 layerId, uint256 entityId, string name, EntityType entityType, TreasureType treasureType, string geohash, bool status, uint256 vaultId);
+        emit EntityReady(layerId, entityId, entities[layerId][entityId].name, entities[layerId][entityId].entityType, entities[layerId][entityId].treasureType, entities[layerId][entityId].geohash, entities[layerId][entityId].status, entities[layerId][entityId].vaultId);
     }
 
 
-    
 }

@@ -3,17 +3,18 @@ pragma solidity 0.8.7;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
-
-
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
-import { ERC1155Receiver } from "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC1155/utils/ERC1155Receiver.sol";
-import { IERC1155 } from "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC1155/IERC1155.sol";
+// import "@openzeppelin/contracts/token/ERC1155/ERC1155Receiver.sol";
+import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
+// import { ERC1155Receiver } from "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC1155/utils/ERC1155Receiver.sol";
+// import { IERC1155 } from "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC1155/IERC1155.sol";
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-
 import { ITroveRegistry } from "./interface/ITroveRegistry.sol";
+
+/// @custom:security-contact alex@homebox.ie
 
 // contract TroveVault is Ownable, IERC721Receiver, ERC1155Receiver  {
   contract TroveVault is Ownable, IERC721Receiver  {
@@ -37,6 +38,7 @@ import { ITroveRegistry } from "./interface/ITroveRegistry.sol";
         address source;
         uint256 tokenId;
     }
+
     
     event NewTreasure(address nftContract, uint256 tokenId, string contractStandard, uint256 value);
 
@@ -56,7 +58,7 @@ import { ITroveRegistry } from "./interface/ITroveRegistry.sol";
             tokenId: tokenId
         });
 
-        registry.addEntity()
+        registry.addEntity(0, "TreasureNFT", ITroveRegistry.EntityType.TREASURE, ITroveRegistry.TreasureType.VAULT, treasureId);
 
         emit NewTreasure(msg.sender, treasureId, "ERC721", 1);
 
