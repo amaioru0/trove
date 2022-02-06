@@ -12,15 +12,19 @@ contract LayersRegistry is Ownable {
     using Counters for Counters.Counter;
     Counters.Counter private _layersIdCounter;
 
+    // Allowed entity types
+    enum EntityType{ TREASURE, SHOWCASE, CUSTOM }
+
+    // Entity struct
     struct Entity {
         string name;
-        string entityType;
+        EntityType entityType;
         string ipfs;
         bool status;
         string geohash;
     }
     
-
+    // Layer struct
     struct Layer {
         string name;
         uint256 layerId;
@@ -30,9 +34,11 @@ contract LayersRegistry is Ownable {
     // Mapping holding all layers
     mapping(uint256 => Layer) public layers;
 
-    // Mapping holding all entities
+    // Mapping holding all entities for a specified layer
     mapping(uint256 => mapping(uint256 => Entity)) public entities;
 
+    // Mapping holding entities ids for each layer
+    mapping(uint256 => Counters.Counter) public entitiesCounter;
 
     // Event emited when a new layer is created
     event NewLayer(string name, uint256 layerId, address owner);
@@ -49,5 +55,23 @@ contract LayersRegistry is Ownable {
         emit NewLayer(name, layerId, owner);
         _layersIdCounter.increment();
     }
+
+
+    // Function to add a new entity to a layer
+
+    function addEntity(uint256 layerId, string calldata name, EntityType entityType, string calldata ipfs, bool status, string calldata geohash) public {
+        require(msg.sender == layers[layerId].owner, "Only layer owner can add entity");
+        uint256 entityId = entitiesCounter[layerId].current();
+        entities[layerId][entityId] = Entity({
+            name: name,
+            entityType: entityType,
+            ipfs: ipfs,
+            status: status,
+            geohash: geohash
+        });
+        entitiesCounter[layerId].increment();
+    }
+
+
     
 }
