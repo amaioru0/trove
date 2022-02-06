@@ -1,1 +1,1 @@
-# hideServ - Unicode
+# Trove Protocol - indexer
