@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-1.0
-pragma solidity 0.8.9;
+pragma solidity 0.8.7;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
@@ -13,10 +13,16 @@ import { IERC1155 } from "https://github.com/OpenZeppelin/openzeppelin-contracts
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-contract TroveProtocol is Ownable, IERC721Receiver, ERC1155Receiver  {
-        
-    constructor () {
-    }
+import { ITroveRegistry } from "./interface/ITroveRegistry.sol";
+
+// contract TroveVault is Ownable, IERC721Receiver, ERC1155Receiver  {
+  contract TroveVault is Ownable, IERC721Receiver  {
+
+   ITroveRegistry private registry;
+
+   constructor (ITroveRegistry _registry) {
+       registry = _registry;
+   }
 
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIdCounter;
@@ -49,30 +55,34 @@ contract TroveProtocol is Ownable, IERC721Receiver, ERC1155Receiver  {
             source: from,
             tokenId: tokenId
         });
+
+        registry.addEntity()
+
         emit NewTreasure(msg.sender, treasureId, "ERC721", 1);
-       _tokenIdCounter.increment();
+
+        _tokenIdCounter.increment();
         return this.onERC721Received.selector;
     }
     
-      function onERC1155Received(address operator, address from, uint256 tokenId, uint256 value, bytes calldata data) external override returns(bytes4) {
-            uint256 treasureId = _tokenIdCounter.current();
-            address tokenOwner = IERC721(msg.sender).ownerOf(tokenId);
-            
-          treasureDetails[treasureId] = TreasureDetails({
-            contractStandard: "ERC1155",
-            ERC721contract: IERC721(0x0000000000000000000000000000000000000000),
-            ERC1155contract: IERC1155(msg.sender),
-            value: value,
-            source: from,
-            tokenId: tokenId
-        });
-        emit NewTreasure(msg.sender, treasureId, "ERC1155", value);
-       _tokenIdCounter.increment();
+    //   function onERC1155Received(address operator, address from, uint256 tokenId, uint256 value, bytes calldata data) external override returns(bytes4) {
+    //         uint256 treasureId = _tokenIdCounter.current();
+    //         address tokenOwner = IERC721(msg.sender).ownerOf(tokenId);
+    //         require(tokenOwner == address(this), "Not a real transfer");
+    //       treasureDetails[treasureId] = TreasureDetails({
+    //         contractStandard: "ERC1155",
+    //         ERC721contract: IERC721(0x0000000000000000000000000000000000000000),
+    //         ERC1155contract: IERC1155(msg.sender),
+    //         value: value,
+    //         source: from,
+    //         tokenId: tokenId
+    //     });
+    //     emit NewTreasure(msg.sender, treasureId, "ERC1155", value);
+    //     _tokenIdCounter.increment();
 
-            return this.onERC1155BatchReceived.selector;
-        }
+    //     return this.onERC1155BatchReceived.selector;
+    //     }
 
-    function onERC1155BatchReceived(address operator, address from, uint256[] calldata ids, uint256[] calldata values, bytes calldata data) external override returns(bytes4) {
-            return this.onERC1155BatchReceived.selector;
-        }
+    // function onERC1155BatchReceived(address operator, address from, uint256[] calldata ids, uint256[] calldata values, bytes calldata data) external override returns(bytes4) {
+    //         return this.onERC1155BatchReceived.selector;
+    //     }
 } 
